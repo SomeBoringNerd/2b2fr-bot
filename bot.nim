@@ -7,8 +7,8 @@ let discord = newDiscordClient(readFile("token.key"))
 var cmd = discord.newHandler()
 
 const
-    defaultGuild = "1002983548514488450"
     colors = 0x670067
+    api = "https://api.2b2fr.xyz"
 
 proc onReady(s: Shard, r: Ready) {.event(discord).} =
     try:
@@ -20,14 +20,7 @@ proc onReady(s: Shard, r: Ready) {.event(discord).} =
 proc interactionCreate(s: Shard, i: Interaction) {.event(discord).} =
     discard await cmd.handleInteraction(s, i)
 
-cmd.addChatAlias("plugin", ["plug"])
-cmd.addChatAlias("joindate", ["jd"])
-cmd.addChatAlias("playtime", ["pt"])
-cmd.addChatAlias("kdr", ["kd"])
-cmd.addChatAlias("namemc", ["mc"])
-cmd.addChatAlias("quote", ["qt"])
-
-cmd.addSlash("help", guildID = defaultGuild) do ():
+cmd.addSlash("help") do ():
     ## Help command
     let res = InteractionResponse(
         kind: irtChannelMessageWithSource,
@@ -74,9 +67,9 @@ cmd.addSlash("help", guildID = defaultGuild) do ():
     )
     await discord.api.createInteractionResponse(i.id, i.token, res)
 
-cmd.addSlash("status", guildID = defaultGuild) do ():
+cmd.addSlash("status") do ():
     ## Displays player count
-    var players = getContent(parseUri"https://api.2b2fr.xyz/status")
+    var players = getContent(parseUri(fmt"{api}/status"))
     let res = InteractionResponse(
         kind: irtChannelMessageWithSource,
         data: some InteractionApplicationCommandCallbackData(
@@ -93,7 +86,7 @@ cmd.addSlash("status", guildID = defaultGuild) do ():
     )
     await discord.api.createInteractionResponse(i.id, i.token, res)
 
-cmd.addSlash("namemc", guildID = defaultGuild) do (player: string):
+cmd.addSlash("namemc") do (player: string):
     ## Search a minecraft username on namemc
     let
         data = getJson(parseUri(fmt"https://api.ashcon.app/mojang/v2/user/{player}"))
@@ -160,7 +153,7 @@ cmd.addSlash("namemc", guildID = defaultGuild) do (player: string):
         )
     await discord.api.createInteractionResponse(i.id, i.token, res)
 
-cmd.addSlash("plugins", guildID = defaultGuild) do ():
+cmd.addSlash("plugins") do ():
     ## Displays in-game plugin list
     let pluginlist = getJson(parseUri"https://api.2b2fr.xyz/plugin")
     var plugins = ""
@@ -182,7 +175,7 @@ cmd.addSlash("plugins", guildID = defaultGuild) do ():
     )
     await discord.api.createInteractionResponse(i.id, i.token, res)
 
-cmd.addSlash("kdr", guildID = defaultGuild) do (player: string):
+cmd.addSlash("kdr") do (player: string):
     ## Displays the KDR of a given player
     let
         kd = getJson(parseUri(fmt"https://api.2b2fr.xyz/kd?player={player}"))
@@ -211,7 +204,7 @@ cmd.addSlash("kdr", guildID = defaultGuild) do (player: string):
         )
     await discord.api.createInteractionResponse(i.id, i.token, res)
 
-cmd.addSlash("playtime", guildID = defaultGuild) do (player: string):
+cmd.addSlash("playtime") do (player: string):
     ## Displays the playtime of a given player
     let
         playtime = getJson(parseUri(fmt"https://api.2b2fr.xyz/pt?player={player}"))
@@ -232,7 +225,7 @@ cmd.addSlash("playtime", guildID = defaultGuild) do (player: string):
         )
     await discord.api.createInteractionResponse(i.id, i.token, res)
 
-cmd.addSlash("joindate", guildID = defaultGuild) do (player: string):
+cmd.addSlash("joindate") do (player: string):
     ## Displays the join date of a given player
     let
         joindate = getJson(parseUri(fmt"https://api.2b2fr.xyz/jd?player={player}"))
@@ -253,7 +246,7 @@ cmd.addSlash("joindate", guildID = defaultGuild) do (player: string):
         )
     await discord.api.createInteractionResponse(i.id, i.token, res)
 
-cmd.addSlash("quote", guildID = defaultGuild) do ():
+cmd.addSlash("quote") do ():
     ## Generates a random quote
     let
         quote = getContent(parseUri"https://inspirobot.me/api?generate=true")
