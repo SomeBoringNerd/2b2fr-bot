@@ -52,6 +52,10 @@ cmd.addSlash("help", guildID = defaultGuild) do ():
                 EmbedField(
                     name: "**/namemc <player>**",
                     value: "```Displays information on a minecraft profile```"
+                ),
+                EmbedField(
+                    name: "**/quote**",
+                    value: "```Generates a random quote```"
                 )],
                 color: some colors,
                 footer: some EmbedFooter(
@@ -242,5 +246,22 @@ cmd.addSlash("joindate", guildID = defaultGuild) do (player: string):
         )
     await discord.api.createInteractionResponse(i.id, i.token, res)
 
+cmd.addSlash("quote", guildID = defaultGuild) do ():
+    ## Generates a random quote
+    let
+        quote = getContent(parseUri"https://inspirobot.me/api?generate=true")
+        res = InteractionResponse(
+            kind: irtChannelMessageWithSource,
+            data: some InteractionApplicationCommandCallbackData(
+                embeds: @[Embed(
+                    title: some "Fun quote",
+                    image: some EmbedImage(
+                        url: some quote
+                    ),
+                    color: some colors
+                )]
+            )
+        )
+    await discord.api.createInteractionResponse(i.id, i.token, res)
 
 waitFor discord.startSession()
