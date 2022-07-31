@@ -47,7 +47,7 @@ cmd.addSlash("help", guildID = defaultGuild) do ():
                 ),
                 EmbedField(
                     name: "**/kdr <player>**",
-                    value: "```Displays the KDR of a given player```"
+                    value: "```Displays the KDR(Kill Death Ratio) of a given player```"
                 ),
                 EmbedField(
                     name: "**/namemc <player>**",
