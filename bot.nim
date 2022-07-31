@@ -20,6 +20,13 @@ proc onReady(s: Shard, r: Ready) {.event(discord).} =
 proc interactionCreate(s: Shard, i: Interaction) {.event(discord).} =
     discard await cmd.handleInteraction(s, i)
 
+cmd.addChatAlias("plugin", ["plug"])
+cmd.addChatAlias("joindate", ["jd"])
+cmd.addChatAlias("playtime", ["pt"])
+cmd.addChatAlias("kdr", ["kd"])
+cmd.addChatAlias("namemc", ["mc"])
+cmd.addChatAlias("quote", ["qt"])
+
 cmd.addSlash("help", guildID = defaultGuild) do ():
     ## Help command
     let res = InteractionResponse(
