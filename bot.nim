@@ -38,11 +38,11 @@ cmd.addSlash("help", guildID = defaultGuild) do ():
                     inline: some true
                 ),
                 EmbedField(
-                    name: "**/jd <player>**",
+                    name: "**/joindate <player>**",
                     value: "```Display the join date of a given player```"
                 ),
                 EmbedField(
-                    name: "**/pt <player>**",
+                    name: "**/playtime <player>**",
                     value: "```Display the playtime of a given player```"
                 ),
                 EmbedField(
