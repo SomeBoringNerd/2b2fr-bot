@@ -9,6 +9,7 @@ nimble install dimscord harpoon dimscmd
 run this command with your bot token(https://discord.com/developers/applications)
 ```
 echo "BOT TOKEN" > token.key
+mkdir bin
 ```
 Compile the program and running it
 ```
