@@ -3,7 +3,7 @@ from uri import parseUri
 
 
 discard os.execShellCmd("clear")
-let discord = newDiscordClient(readFile("token.key"))
+let discord = newDiscordClient(readFile("token.key").split("\n")[0])
 var cmd = discord.newHandler()
 
 const
