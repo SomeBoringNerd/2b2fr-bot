@@ -1,4 +1,4 @@
-import asyncdispatch, json, options, dimscord, strutils, harpoon, strformat, dimscmd, os, times
+import asyncdispatch, json, options, dimscord, strutils, harpoon, strformat, dimscmd, os, math
 from uri import parseUri
 
 
@@ -153,98 +153,135 @@ cmd.addSlash("namemc") do (player: string):
         )
     await discord.api.createInteractionResponse(i.id, i.token, res)
 
-cmd.addSlash("plugins") do ():
-    ## Displays in-game plugin list
-    let pluginlist = getJson(parseUri"https://api.2b2fr.xyz/plugin")
-    var plugins = ""
-    for plug in pluginlist:
-        plugins.add(fmt"{plug}{'\n'}")
-    let res = InteractionResponse(
-        kind: irtChannelMessageWithSource,
-        data: some InteractionApplicationCommandCallbackData(
-            embeds: @[Embed(
-                title: some "**Plugin List**",
-                description: some fmt"```{'\n'}{plugins}{'\n'}```",
-                color: some colors,
-                footer: some EmbedFooter(
-                    text: "Made by TaxMachine",
-                    icon_url: some "https://cdn.discordapp.com/avatars/795785229699645491/d5e35455f6a23a2e6fef88e3416d7a9b.webp"
-                )
-            )]
-        )
-    )
-    await discord.api.createInteractionResponse(i.id, i.token, res)
+#cmd.addSlash("plugins") do ():
+#    ## Displays in-game plugin list
+#    let pluginlist = getJson(parseUri"https://api.2b2fr.xyz/plugin")
+#    var plugins = ""
+#    for plug in pluginlist:
+#        plugins.add(fmt"{plug}{'\n'}")
+#    let res = InteractionResponse(
+#        kind: irtChannelMessageWithSource,
+#        data: some InteractionApplicationCommandCallbackData(
+#            embeds: @[Embed(
+#                title: some "**Plugin List**",
+#                description: some fmt"```{'\n'}{plugins}{'\n'}```",
+#                color: some colors,
+#                footer: some EmbedFooter(
+#                    text: "Made by TaxMachine",
+#                    icon_url: some "https://cdn.discordapp.com/avatars/795785229699645491/d5e35455f6a23a2e6fef88e3416d7a9b.webp"
+#                )
+#            )]
+#        )
+#    )
+#    await discord.api.createInteractionResponse(i.id, i.token, res)
 
 cmd.addSlash("kdr") do (player: string):
     ## Displays the KDR of a given player
     let
-        kd = getJson(parseUri(fmt"https://api.2b2fr.xyz/kd?player={player}"))
-        kill = kd["kill"].getStr
-        death = kd["death"].getStr
-    let res = InteractionResponse(
+        kd = getContent(parseUri(fmt"{api}/kd?player={player}"))
+    if (kd == "invalid username"):
+        let res = InteractionResponse(
             kind: irtChannelMessageWithSource,
             data: some InteractionApplicationCommandCallbackData(
-                embeds: @[Embed(
-                    title: some fmt"`{player}`'s **kdr**",
-                    fields: some @[EmbedField(
-                        name: "**Kill**",
-                        value: fmt"```{kill} kills```"
-                    ),
-                    EmbedField(
-                        name: "**Death**",
-                        value: fmt"```{death} deaths```"
-                    )],
-                    footer: some EmbedFooter(
-                        text: "Made by TaxMachine",
-                        icon_url: some "https://cdn.discordapp.com/avatars/795785229699645491/d5e35455f6a23a2e6fef88e3416d7a9b.webp"
-                    ),
-                    color: some colors
-                )]
+                content: "Invalid username"
             )
         )
-    await discord.api.createInteractionResponse(i.id, i.token, res)
+        await discord.api.createInteractionResponse(i.id, i.token, res)
+    else:
+        let
+            gayson = parseJson(kd)
+            kill = gayson["kill"].getInt
+            death = gayson["death"].getInt
+            uuid = gayson["user"].getStr
+        var
+            ratio: string
+            rawratio: float
+        if (death != 0):
+            rawratio = kill / death
+            ratio = rawratio.formatFloat(ffDecimal, 4)
+        else:
+            ratio = $kill
+        let res = InteractionResponse(
+                kind: irtChannelMessageWithSource,
+                data: some InteractionApplicationCommandCallbackData(
+                    embeds: @[Embed(
+                        title: some fmt"`{player}`'s **kdr**",
+                        fields: some @[EmbedField(
+                            name: "**Kill**",
+                            value: fmt"```{$kill} kills```"
+                        ),
+                        EmbedField(
+                            name: "**Death**",
+                            value: fmt"```{$death} deaths```"
+                        ),
+                        EmbedField(
+                            name: "**kdr**",
+                            value: fmt"```{$ratio} kdr```"
+                        )],
+                        footer: some EmbedFooter(
+                            text: "Made by TaxMachine",
+                            icon_url: some "https://cdn.discordapp.com/avatars/795785229699645491/d5e35455f6a23a2e6fef88e3416d7a9b.webp"
+                        ),
+                        color: some colors,
+                        thumbnail: some EmbedThumbnail(
+                            url: some fmt"https://crafatar.com/avatars/{uuid}"
+                        )
+                    )]
+                )
+            )
+        await discord.api.createInteractionResponse(i.id, i.token, res)
 
 cmd.addSlash("playtime") do (player: string):
     ## Displays the playtime of a given player
-    let
-        playtime = getJson(parseUri(fmt"https://api.2b2fr.xyz/pt?player={player}"))
-        time = $playtime["playTime"].getInt
-    let res = InteractionResponse(
+    let playtime = getContent(parseUri(fmt"{api}/pt?player={player}"))
+    if (playtime == "invalid username"):
+        let res = InteractionResponse(
             kind: irtChannelMessageWithSource,
             data: some InteractionApplicationCommandCallbackData(
-                embeds: @[Embed(
-                    title: some fmt"`{player}`'s **playtime**",
-                    description: some fmt"```{time} hours```",
-                    footer: some EmbedFooter(
-                        text: "Made by TaxMachine",
-                        icon_url: some "https://cdn.discordapp.com/avatars/795785229699645491/d5e35455f6a23a2e6fef88e3416d7a9b.webp"
-                    ),
-                    color: some colors
-                )]
+                content: "Invalid username"
             )
         )
-    await discord.api.createInteractionResponse(i.id, i.token, res)
+        await discord.api.createInteractionResponse(i.id, i.token, res)
+    else:
+        let
+            parsedplay = parseJson(playtime)
+            time = parsedplay["playTime"].getInt
+            res = InteractionResponse(
+                kind: irtChannelMessageWithSource,
+                data: some InteractionApplicationCommandCallbackData(
+                    embeds: @[Embed(
+                        title: some fmt"`{player}`'s **playtime**",
+                        description: some fmt"```{$time} hours```",
+                        footer: some EmbedFooter(
+                            text: "Made by TaxMachine",
+                            icon_url: some "https://cdn.discordapp.com/avatars/795785229699645491/d5e35455f6a23a2e6fef88e3416d7a9b.webp"
+                        ),
+                        color: some colors
+                    )]
+                )
+            )
+        await discord.api.createInteractionResponse(i.id, i.token, res)
 
-cmd.addSlash("joindate") do (player: string):
-    ## Displays the join date of a given player
-    let
-        joindate = getJson(parseUri(fmt"https://api.2b2fr.xyz/jd?player={player}"))
-        time = times.fromUnix(joindate["joinDate"].getInt).utc
-    let res = InteractionResponse(
-            kind: irtChannelMessageWithSource,
-            data: some InteractionApplicationCommandCallbackData(
-                embeds: @[Embed(
-                    title: some fmt"`{player}`'s **join date**",
-                    description: some fmt"`{time}`",
-                    footer: some EmbedFooter(
-                        text: "Made by TaxMachine",
-                        icon_url: some "https://cdn.discordapp.com/avatars/795785229699645491/d5e35455f6a23a2e6fef88e3416d7a9b.webp"
-                    ),
-                    color: some colors
-                )]
-            )
-        )
-    await discord.api.createInteractionResponse(i.id, i.token, res)
+#cmd.addSlash("joindate") do (player: string):
+#    ## Displays the join date of a given player
+#    let
+#        joindate = getJson(parseUri(fmt"https://api.2b2fr.xyz/jd?player={player}"))
+#        time = times.fromUnix(joindate["joinDate"].getInt).utc
+#    let res = InteractionResponse(
+#            kind: irtChannelMessageWithSource,
+#            data: some InteractionApplicationCommandCallbackData(
+#                embeds: @[Embed(
+#                    title: some fmt"`{player}`'s **join date**",
+#                    description: some fmt"`{time}`",
+#                    footer: some EmbedFooter(
+#                        text: "Made by TaxMachine",
+#                        icon_url: some "https://cdn.discordapp.com/avatars/795785229699645491/d5e35455f6a23a2e6fef88e3416d7a9b.webp"
+#                    ),
+#                    color: some colors
+#                )]
+#            )
+#        )
+#    await discord.api.createInteractionResponse(i.id, i.token, res)
 
 cmd.addSlash("quote") do ():
     ## Generates a random quote
@@ -258,7 +295,11 @@ cmd.addSlash("quote") do ():
                     image: some EmbedImage(
                         url: some quote
                     ),
-                    color: some colors
+                    color: some colors,
+                    footer: some EmbedFooter(
+                        text: "Made by TaxMachine",
+                        icon_url: some "https://cdn.discordapp.com/avatars/795785229699645491/d5e35455f6a23a2e6fef88e3416d7a9b.webp"
+                    )
                 )]
             )
         )

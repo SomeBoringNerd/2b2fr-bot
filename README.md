@@ -1,5 +1,8 @@
 # 2b2fr bot
-NIM Bot by TaxMachine
+Nim Bot by TaxMachine for 2b2fr.xyz
+
+<img src="icon.png" height="550" width="700">
+
 
 ## Setup
 Install required modules
